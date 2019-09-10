@@ -68,7 +68,6 @@ class Labyrinth:
         start = False
         start_position = None
         while True:
-            plt.close()
             fig = plt.figure(figsize=size_fig)
             ax = fig.add_axes([0,0,1,1])
             major_ticks = np.arange(0, w+2,1)
@@ -89,42 +88,45 @@ class Labyrinth:
                 patches_path = self.get_paths(path)
                 for pat in patches_path:
                     ax.add_patch(pat)
-            if not goal:
+            if not goal and not goal_position:
                 x = plt.ginput(n=-1, show_clicks = True)
                 if not x:
                     goal = True
+                    plt.close()
+                    continue
                 for y in x:
                     x1=y
                     path.append([int(x1[0]),int(x1[1])])
+                plt.close()
                 print("Ruta:\n", path)
-                plt.show()
             elif goal and not goal_position and not start:
                 x = plt.ginput(n=1, show_clicks = True)
                 x = x[0]
                 goal_position = [int(x[0]),int(x[1])]
+                plt.close()
                 continue
             elif goal_position and not start:
-                p = pt.Rectangle((goal_position[0],goal_position[1]), 1,1, fill = True, color='blue')
+                p = pt.Rectangle((goal_position[0],goal_position[1]), 1,1, fill = True, color='green')
                 ax.add_patch(p)
-                plt.show(block=False)
-                plt.pause(1.5)
                 plt.close()
                 goal = False
                 start = True
             elif start and not start_position:
+                p = pt.Rectangle((goal_position[0],goal_position[1]), 1,1, fill = True, color='green')
+                ax.add_patch(p)
                 x = plt.ginput(n=1, show_clicks = True)
                 x = x[0]
                 start_position = [int(x[0]),int(x[1])]
+                plt.close()
                 continue
             else:
-                p = pt.Rectangle((goal_position[0],goal_position[1]), 1,1, fill = True, color='blue')
+                p = pt.Rectangle((goal_position[0],goal_position[1]), 1,1, fill = True, color='green')
                 ax.add_patch(p)
-                p = pt.Rectangle((start_position[0],start_position[1]), 1,1, fill = True, color='green')
+                p = pt.Rectangle((start_position[0],start_position[1]), 1,1, fill = True, color='blue')
                 ax.add_patch(p)
-                plt.show(block=False)
-                plt.pause(1.5)
-                plt.close()
                 break
+        plt.savefig('laberinto.png')
+        plt.close()
 
     
     def create_Labyrinth(self, size = None ):
@@ -135,14 +137,10 @@ class Labyrinth:
         w = self.width
         size_fig = self.sizeFig()
         self.path_Labyrinth(h,w, size_fig)
-        plt.savefig('laberinto.png')
-        plt.close()
         print('Se termino, el laberinto es el siguiente')
-        
         self.show_Labyrinth()
         
 if __name__ == '__main__':
     L = Labyrinth()
     h,w = L.ask_size()
     L.create_Labyrinth(size = {'heigth':h, 'width':w})
-    L.show_Labyrinth()
