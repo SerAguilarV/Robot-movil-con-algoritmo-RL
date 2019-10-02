@@ -14,15 +14,14 @@ class WindowMain():
         frame.pack()
         Boton_1 = tk.Button(frame, text="Crear\nLaberinto", font=("Helvética", "16") , width = 15)
         Boton_1.pack(side = tk.LEFT, padx = 20, pady =20)
-        Boton_2 = tk.Button(frame, text="Laberinto\nPredeterminado", font=("Helvética", "16") , width = 15, 
-                                command = self.functionLabDefault)
+        Boton_2 = tk.Button(frame, text="Laberinto\nPredeterminado", font=("Helvética", "16") , width = 15)
         Boton_2.pack(side = tk.RIGHT, padx = 20, pady =20)
         self.root.mainloop() 
     
     def functionLabDefault(self):
         self.root.destroy()
-        W = WindowLabDefault()
         
+
 class WindowLabDefault():
     def __init__(self):
         self.root = tk.Tk() 
@@ -61,4 +60,5 @@ class WindowLabDefault():
         return ImageTk.PhotoImage(img)
 
 if __name__ is "__main__":
-    W = WindowMain()
+    W = WindowLabDefault()
+
