@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as pt
+from PIL import Image
 
 class CrearLaberinto:
     def __init__(self):
@@ -58,7 +59,6 @@ class CrearLaberinto:
         ax.imshow(imagen)
         ax.set_axis_off()
         plt.show(block=False)
-        plt.pause(1.5)
         plt.close()
     
     def path_Labyrinth(self,h,w, size_fig):
@@ -98,7 +98,7 @@ class CrearLaberinto:
                     x1=y
                     path.append([int(x1[0]),int(x1[1])])
                 plt.close()
-                print("Ruta:\n", path)
+                #print("Ruta:\n", path)
             elif goal and not startPosition and not start:
                 x = plt.ginput(n=1, show_clicks = True)
                 x = x[0]
@@ -125,12 +125,16 @@ class CrearLaberinto:
                 p = pt.Rectangle((goalPosition[0],goalPosition[1]), 1,1, fill = True, color='yellow')
                 ax.add_patch(p)
                 break
-        print(path)
+        #print(path)
         BlackSpaces = self.getBlackSpaces(path, h, w)
         Inicio = self.LookFor(startPosition, h, w)
         Final = self.LookFor(goalPosition, h, w)
         plt.savefig('laberinto.png')
         plt.close()
+        img = Image.open('laberinto.png')
+        img = img.resize( ((w+2)*50 , (h+2)*50 ), Image.ANTIALIAS)
+        #print("Tamaño : {} w  x {} h".format((w+2)*50, (h+2)*50))
+        img.save('laberinto.png')
         return BlackSpaces, Inicio, Final
 
     def LookFor(self, path, filas, columnas):
@@ -140,7 +144,7 @@ class CrearLaberinto:
             for x in range(1,columnas+1,1):
                 if [x,y] == path:
                     numCasilla = (x) + ((conty)*(columnas))
-                    print("Casilla Encontrada: " + str(numCasilla))
+                    #print("Casilla Encontrada: " + str(numCasilla))
                     return numCasilla
 
     def getBlackSpaces(self, path, filas, columnas):
@@ -153,7 +157,7 @@ class CrearLaberinto:
                     numCasilla = (x) + ((conty)*(columnas))
                     #print("Casilla Negra {}: {} , {}".format(numCasilla, x, conty))
                     BlackSpaces.append(numCasilla)
-        print(BlackSpaces)
+        #print(BlackSpaces)
         return BlackSpaces
 
     def create_Labyrinth(self, size = None ):
@@ -164,7 +168,7 @@ class CrearLaberinto:
         w = self.width
         size_fig = self.sizeFig()
         BlackSpaces, Inicio, Final = self.path_Labyrinth(h,w, size_fig)
-        print('Se termino, el laberinto es el siguiente')
+        #print('Se termino, el laberinto es el siguiente')
         self.show_Labyrinth()
         return BlackSpaces, Inicio, Final
         

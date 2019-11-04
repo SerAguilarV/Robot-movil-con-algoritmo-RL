@@ -9,6 +9,7 @@ EspaciosNegros = []
 Tamaño = []
 Inicio = None
 Final = None
+EnableRobot = None
 
 class WindowMain():
     def __init__(self):
@@ -38,12 +39,16 @@ class WindowMain():
         W = WindowCrearLab()
 
     def GetDatosPred(self):
-        global Laberinto, EspaciosNegros, RL, Eps
-        return Laberinto, EspaciosNegros, RL, Eps
+        global Laberinto, EspaciosNegros, RL, Eps, EnableRobot
+        if EnableRobot:
+            print("Abriendo Camara ...")
+        return Laberinto, EspaciosNegros, RL, Eps, EnableRobot
     
     def GetDatos(self):
-        global Laberinto, EspaciosNegros, RL, Eps, Tamaño, Inicio, Final
-        return Laberinto, EspaciosNegros, RL, Eps, Tamaño, Inicio, Final
+        global Laberinto, EspaciosNegros, RL, Eps, Tamaño, Inicio, Final, EnableRobot
+        if EnableRobot:
+            print("Abriendo Camara ...")
+        return Laberinto, EspaciosNegros, RL, Eps, Tamaño, Inicio, Final, EnableRobot
     
     def KindLab(self):
         global Laberinto
@@ -101,6 +106,7 @@ class WindowFeaturesLab():
         self.root.geometry("500x350")
         self.root.title("UPIITA")
         RL2 = tk.IntVar()
+        EnRobot = tk.BooleanVar() 
         #RL2.set(0)
         frame2 = tk.Frame(self.root, height=20)
         frame2.pack()
@@ -126,16 +132,28 @@ class WindowFeaturesLab():
         radiobutton_widget3.pack(side = tk.LEFT, padx=10)
         radiobutton_widget3.select()
 
+        frame3 = tk.Frame(self.root, height=20)
+        frame3.pack()
+        labelframe_widget2 = tk.LabelFrame(frame3, text="Robot Omnidireccional")
+        radiobutton_widget4 = tk.Radiobutton(labelframe_widget2, text="Con Robot", variable=EnRobot, value=True)
+        radiobutton_widget5 = tk.Radiobutton(labelframe_widget2, text="Sin Robot", variable=EnRobot, value=False)
+        labelframe_widget2.pack(padx=20)
+        radiobutton_widget4.pack(side = tk.LEFT, padx=10)
+        radiobutton_widget5.pack(side = tk.LEFT, padx=10)
+        radiobutton_widget5.select()
+
         frame5 = tk.Frame(self.root)
         frame5.pack()
-        boton1 = tk.Button(frame5, text = "Continuar", command = lambda : self.__ContinueProgram(RL2,scale_widget.get()))
-        boton1.pack(side = tk.TOP)
+        boton1 = tk.Button(frame5, text = "Continuar", command = lambda : self.__ContinueProgram(RL2,
+                                                                    scale_widget.get(), EnRobot.get()))
+        boton1.pack(side = tk.TOP, pady = 30)
         self.root.mainloop() 
 
-    def __ContinueProgram(self,v1,v2):
-        global EspaciosNegros, Laberinto, RL, Eps
+    def __ContinueProgram(self,v1,v2, v3):
+        global EspaciosNegros, Laberinto, RL, Eps, EnableRobot
         RL = v1.get()
         Eps = v2
+        EnableRobot = v3
         if Laberinto == 1:
             EspaciosNegros = [6,9,10,11,13,16,18,22,23,25,26,27,32,37,38,39,41,42]
         elif Laberinto == 2:
@@ -176,8 +194,8 @@ class WindowCrearLab():
         
     def __ContinueProgram(self,v1,v2):
         global EspaciosNegros, Tamaño, Inicio, Final
-        print("Altura de Laberinto: {}".format(v1))
-        print("Ancho de Laberinto: {}".format(v2))
+        #print("Altura de Laberinto: {}".format(v1))
+        #print("Ancho de Laberinto: {}".format(v2))
         Tamaño = [v1,v2]
         self.root.destroy()
         L = CrearLaberinto()
@@ -185,8 +203,8 @@ class WindowCrearLab():
         WFL = WindowFeaturesLab()
 
 
-if __name__ is "__main__":
-    W = WindowCrearLab()
+# if __name__ is "__main__":
+#     W = WindowFeaturesLab()
     # W = WindowMain()
     # L, EN, R, E  = W.GetDatos()
     # print("Laberinto: {}".format(L))

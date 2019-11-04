@@ -8,7 +8,42 @@ from Laberinto_Img import Laberinto_Img
 
 ImgLab = None
 
-def main(NumeroEpisodios, Laberinto, RL, ImgLab, Tamaño = None, EdoObj = None, EdoInicial = None ):
+def CrearLabQ(Size, EN, Obj, Ini):
+    Mat = np.zeros((Size[0]+2,Size[1]+2), dtype=np.int16)
+    cont = 1
+    Fin = 0
+    Inicio = 0
+    for y in range(Size[0]):
+        for x in range(Size[1]):
+            numCasilla = (x+1) + ((y)*(Size[1]))
+            if numCasilla == Obj:
+                Fin = cont
+            if numCasilla == Ini:
+                Inicio = cont
+            if not numCasilla in EN:
+                Mat[y+1][x+1] = cont
+                cont+=1
+    return Mat, Fin, Inicio
+
+def CrearReco(Size, lab_q, Fin):
+    Mat = []
+    cont = 1
+    ListaO = [0,0,0,0]
+    for y in range(Size[0]+2):
+        for x in range(Size[1]+2):
+            if lab_q[y][x] != 0:
+                Vec = [lab_q[y][x+1], lab_q[y][x-1], lab_q[y-1][x], lab_q[y+1][x]]
+                ListaD = list(map(lambda x : -1 if x!=0 else 0, Vec))
+                ListaF = list(map(lambda x : 11 if int(x)==int(Fin) else 0, Vec))
+                # print("Casilla {} : Fin {} : Num {} : ListaF {}".format(lab_q[y][x], Fin, ListaD, ListaF))
+                Lista = ListaO.copy()
+                for i in range(4):
+                    Lista[i] = ListaD[i]+ListaF[i]
+                Mat.append(Lista)
+    # print(Mat)
+    return Mat
+
+def main(NumeroEpisodios, Laberinto, RL, ImgLab, EspaciosNegros, SizeL = [7,7], EdoObj = None, EdoInicial = None, RobotEnable = False):
     frames=1
     alpha=0.9
     gamma=0.95
@@ -17,7 +52,7 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, Tamaño = None, EdoObj = None, 
     lab_q_1 = [[0,  0,  0,   0,  0,   0,   0,   0, 0],        [0,  3,  4,   5,  6,   7,   0,  29, 0],        [0,  2,  0,   0,  0,   8,   0,  28, 0],        [0,  1,  0,  27,  0,   9,  10,  11, 0],        [0,  0,  0,  26,  0,   0,   0,  12, 0],        [0, 23, 24,  25,  0,  15,  14,  13, 0],        [0, 22,  0,   0,  0,  16,   0,   0, 0],        [0, 21,  20, 19,  18, 17,  30,  31, 0],        [0,  0,  0,   0,  0,   0,   0,   0, 0]]
 
     reco2= [[0, 0,   0,  -10],      [0,    0,  -10, -10],               [0,    0,  -10, -10],             [ -100,  0,  -10, -10],               [ -10,  0,  -10, -10],               [ -10,  0,  -10, -10],               [ -10,  0,  -10, 0],               [ -100,  -10, 0,  -10],               [ -10,  -10, -100, -10],               [ -10,  -10, -10, -10],               [ -10,  -10,  -10, 0],               [ -100,  -100, 0,  -10],               [ -10,  -10, -100, -10],               [ -10,  -10, -10, -10],               [ -10,  -10, -10, 0],               [ -100,  -100, 0,  -10],            [ -10,  -10, -100, -10],     [ -10,  -10, -10, -10],            [ -10,  -10, -10, 0],           [ -100,  -100, 0,  -10],               [ -10,  -10, -100, -10],             [ -10,  -10, -10, -10],               [ -10,  -10, -10, 0],             [ -100,  -100, 0,  -10],        [ -10,  -10, -100, -10],               [ -10,  -10, -10, -10],              [-10,    -10, -10, 0],               [ 0,  -10,  -10, 0],        [0,    -10, -10, -10],        [0,    -10, -10, -10],      [0,    -100, -10, -10],         [0,    0,  -10, -10],      [0,    0,  100,  -10],               [0,    0,  100,  100]]
-    lab_q_2 =[[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 34, 0], [0, 2, 0, 0, 0, 0, 0,33, 0], [0, 3, 0, 0, 0, 0, 0,32, 0], [0, 4, 8, 12, 16, 20, 24, 31], [0, 5, 9, 13, 17, 21, 25, 30, 0], [0, 6, 10, 14, 18, 22, 26, 29, 0], [0, 7, 11, 15, 19, 23, 27, 28, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+    lab_q_2 =[[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 34, 0], [0, 2, 0, 0, 0, 0, 0,33, 0], [0, 3, 0, 0, 0, 0, 0,32, 0], [0, 4, 8, 12, 16, 20, 24, 31, 0], [0, 5, 9, 13, 17, 21, 25, 30, 0], [0, 6, 10, 14, 18, 22, 26, 29, 0], [0, 7, 11, 15, 19, 23, 27, 28, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
     reco3=[[  -1,    0,    0,   -1],[  -1,   -1,    0,   -1],[  -1,   -1,    0,   -1],[  -1,   -1,    0,   -1],[  -1,   -1,    0,   -1],[  -1,   -1,    0,  10],[   0,   -1,    0,   -1],[  -1,    0,   -1,   -1],[  -1,   -1,   -1,   -1],[  -1,   -1,   -1,   -1],[  -1,   -1,   -1,   -1],[ 10,   -1,   -1, -10],[  -1,   -1,   -1,   -1],[   0,  10,   -1,   -1],[  -1,    0,   -1,   -1],[  -1,   -1,   -1,   -1],[  -1,   -1,   -1,   -1],[-10,   -1,   -1, -10],[  -1,   -1,   -1,   -1],[  -1, -10,  10,   -1],[   0,   -1,   -1,   -1],[  -1,    0,   -1,   -1],[  -1,   -1,   -1,   -1],[-10,   -1,   -1, -10],[  -1,   -1,   -1,   -1],[  -1, -10, -10,   -1],[  -1,   -1,   -1,   -1],[   0,   -1,   -1,   -1],[  -1,    0,   -1,   -1],[-10,   -1,   -1, -10],[  -1,   -1,   -1,   -1],[  -1, -10, -10,   -1],[  -1,   -1,   -1,   -1],[  -1,   -1,   -1,   -1],[   0,   -1,   -1,   -1],[-10,    0,   -1,   -1],[  -1,   -1,   -1,   -1],[  -1, -10, -10,   -1],[  -1,   -1,   -1,   -1],[  -1,   -1,   -1,   -1],[  -1,   -1,   -1,   -1],[   0,   -1,   -1,   -1],[  -1,    0,   -1,    0],[  -1,   -1, -10,    0],[  -1,   -1,   -1,    0],[  -1,   -1,   -1,    0],[  -1,   -1,   -1,    0],[  -1,   -1,   -1,    0],[   0,   -1,   -1,    0]]
     lab_q_3 =[[ 0,  0,  0,  0,  0,  0,  0,  0,  0], [ 0,  1,  2,  3,  4,  5,  6,  7,  0], [ 0,  8,  9, 10, 11, 12, 13, 14,  0], [ 0, 15, 16, 17, 18, 19, 20, 21,  0], [ 0, 22, 23, 24, 25, 26, 27, 28,  0], [ 0, 29, 30, 31, 32, 33, 34, 35,  0], [ 0, 36, 37, 38, 39, 40, 41, 42,  0], [ 0, 43, 44, 45, 46, 47, 48, 49,  0], [ 0,  0,  0,  0,  0,  0,  0,  0,  0]]
@@ -49,12 +84,12 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, Tamaño = None, EdoObj = None, 
         Ima_Laberinto = 'laberinto3.png'
 
     else:
-        print("Laberinto Predeterminado")
-        CrearLabQ
-        CrearReco
-        EstadoObjetivo
-        Q = np.zeros([len(Tamaño[0]*Tamaño[1]),4])
-        EstadosIniciales = []
+        print("Laberinto Creado")
+        lab_q, EdoObj, EdoInicial = CrearLabQ(SizeL, EspaciosNegros, EdoObj, EdoInicial)
+        reco = CrearReco(SizeL, lab_q, EdoObj)
+        EstadoObjetivo = EdoObj
+        Q = np.zeros([SizeL[0]*SizeL[1],4])
+        EstadosIniciales = [EdoInicial, EdoInicial, EdoInicial]
         Ima_Laberinto = "laberinto.png"
 
     Pasos = 0
@@ -67,7 +102,7 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, Tamaño = None, EdoObj = None, 
     WHITE = (255, 255, 255)
    
     pygame.init()
-    screen = pygame.display.set_mode((500,500))
+    screen = pygame.display.set_mode(((SizeL[1]+2)*50 + 50, (SizeL[0]+2)*50 + 50))
     screen.fill(WHITE)
     personaje = pygame.image.load('robot.png')
     if RL==1:
@@ -81,12 +116,12 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, Tamaño = None, EdoObj = None, 
     pygame.display.update()
     clock = pygame.time.Clock()
     
-    Comenzar()
-    
     while True:
 #===========================================================================================================
         if RL == 1:
             clock.tick(frames)
+            if RobotEnable:
+                Comenzar()
             if Inicio_Episodio==True:
                 Recompensa=0
                 Pasos=0
@@ -98,7 +133,8 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, Tamaño = None, EdoObj = None, 
                 AccionPosible=Selec_Accion_Boltzmann(EstadoActual,reco,Q,x,y,lab_q)
                 Recompensa=reco[EstadoActual-1][AccionPosible]
                 EstadoSiguiente,x,y = Selec_Estado(AccionPosible,y,x,lab_q)
-                MoverRobot(EstadoActual, EstadoSiguiente, ImgLab, lab_q)
+                if RobotEnable:
+                    MoverRobot(EstadoActual, EstadoSiguiente, ImgLab, lab_q, sizeL = SizeL)
                 Edo=EstadoActual-1
                 EdoSig=EstadoSiguiente-1
                 MaximoEdoSig=MaxEdoSig(EdoSig,Q,reco)
@@ -110,6 +146,8 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, Tamaño = None, EdoObj = None, 
 #=====================================================================================================================
         elif RL == 2 or RL==3:
             clock.tick(frames)
+            if RobotEnable:
+                Comenzar()
             if Inicio_Episodio==True:
                 if RL==3:
                     S=[]
@@ -128,7 +166,8 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, Tamaño = None, EdoObj = None, 
                 Recompensa=reco[EstadoActual-1][AccionPosible]
                 EstadoSiguiente,x,y = Selec_Estado(AccionPosible,y,x,lab_q)
                 AccionSiguiente=Selec_Accion_Boltzmann(EstadoSiguiente,reco,Q,x,y,lab_q)
-                MoverRobot(EstadoActual, EstadoSiguiente, ImgLab, lab_q)
+                if RobotEnable:
+                    MoverRobot(EstadoActual, EstadoSiguiente, ImgLab, lab_q, sizeL = SizeL)
                 Edo=EstadoActual-1
                 EdoSig=EstadoSiguiente-1
                 #Ganancia=Q[Edo][AccionPosible]
@@ -364,40 +403,55 @@ def Ploter_Grafica(GRAF,li,ls,R,L):
     plt.tight_layout()
     plt.show()
 
-def MoverRobot(EdoAnt, EdoSig, ImgLab, Laberinto):
+def MoverRobot(EdoAnt, EdoSig, ImgLab, Laberinto, sizeL):
     L = np.array(Laberinto)[1:-1,1:-1]
-    EdoAntN, EdoSigN = Reubicar(EdoAnt, EdoSig, L)
+    if sizeL:
+        EdoAntN, EdoSigN = Reubicar(EdoAnt, EdoSig, L, sizeL)
+    else:
+        EdoAntN, EdoSigN = Reubicar(EdoAnt, EdoSig, L, [7,7])
     ImgLab.VideoLaberinto(EdoAntN, EdoSigN)
 
 def Comenzar():
     ImgLab.Comenzar()
 
-def Reubicar(EdoAnt, EdoSig, Laberinto):
+def Reubicar(EdoAnt, EdoSig, Laberinto, sizeL):
     flag = False
-    for y in range(len(Laberinto[:][0])):
-        for x in range(len(Laberinto[:][0])):
+    for y in range(sizeL[0]):
+        for x in range(sizeL[1]):
             if EdoAnt == Laberinto[y][x]:
                 flag = True
                 break
         if flag:
             break
-    EdoAntN = (x+1) + ((y)*(7))
+    EdoAntN = (x+1) + ((y)*(sizeL[1]))
+    # print("Edo Ant : {}  Edo Nuevo : {}".format(EdoAnt, EdoAntN))
     flag = False
-    for y in range(len(Laberinto[:][0])):
-        for x in range(len(Laberinto[:][0])):
+    for y in range(sizeL[0]):
+        for x in range(sizeL[1]):
             if EdoSig == Laberinto[y][x]:
                 flag = True
                 break
         if flag:
             break
-    EdoSigN = (x+1) + ((y)*(7))
+    EdoSigN = (x+1) + ((y)*(sizeL[1]))
+    # print("Edo Ant : {}  Edo Nuevo : {}".format(EdoSig, EdoSig))
     return EdoAntN, EdoSigN
 
-def Iniciar(NumeroEpisodios, Laberinto, RL, EspaciosNegro):
-    global ImgLab
-    ImgLab = Laberinto_Img(EspaciosNegro)
-    ImgLab.CapturarLaberinto()
-    ImgLab.MostrarLaberinto()
-    ImgLab.RecortarLaberinto()
-    main(NumeroEpisodios, Laberinto, RL, ImgLab)
-            
+def Iniciar(NumeroEpisodios, Laberinto, RL, EspaciosNegros, sizeLab = None, Inicio = None, Fin  = None, RobotEnable = False):
+    if RobotEnable:
+        global ImgLab
+        if sizeLab:
+            ImgLab = Laberinto_Img(EspaciosNegros, NCasillasX=sizeLab[1], NCasillasY=sizeLab[0])
+        else:
+            ImgLab = Laberinto_Img(EspaciosNegros)
+        ImgLab.CapturarLaberinto()
+        ImgLab.MostrarLaberinto()
+        ImgLab.RecortarLaberinto()
+    if not Inicio:
+        main(NumeroEpisodios, Laberinto, RL, ImgLab, EspaciosNegros, RobotEnable=RobotEnable)
+    else:
+        main(NumeroEpisodios, Laberinto, RL, ImgLab, 
+            SizeL=sizeLab, EdoInicial = Inicio, EdoObj = Fin, EspaciosNegros = EspaciosNegros, RobotEnable=RobotEnable)
+
+# if __name__ is "__main__":
+#     Iniciar(25, 'Creado', 1, [1, 8, 15], [3, 5], 11, 5)

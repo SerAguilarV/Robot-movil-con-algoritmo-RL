@@ -18,7 +18,7 @@ class Laberinto_Img():
         self.ResolucionCamara = ResolucionCamara
         self.NCasillasY = NCasillasY
         self.NCasillasX = NCasillasX
-        self.camara = cv2.VideoCapture(0)
+        self.camara = cv2.VideoCapture(1)
         self.camara.set(cv2.CAP_PROP_FRAME_WIDTH, self.ResolucionCamara[0])
         self.camara.set(cv2.CAP_PROP_FRAME_HEIGHT, self.ResolucionCamara[1])
         self.Laberinto = None
@@ -32,6 +32,7 @@ class Laberinto_Img():
         self.Clicks= []
         self.cont = 0
         self.EspaciosNegros = EspaciosNegros
+        self.Movimiento = ""
     
     def ClicksFunction(self, event,x,y,flags,param):
         if event == cv2.EVENT_LBUTTONDBLCLK:
@@ -71,7 +72,8 @@ class Laberinto_Img():
         self.HCasillas = round(self.sizeLab[0]/(self.NCasillasY))
         for y in range(self.NCasillasY):
             for x in range(self.NCasillasX):
-                numCasilla = str((x+1) + ((y)*(self.NCasillasY)))
+                numCasilla = str((x+1) + ((y)*(self.NCasillasX)))
+                print(numCasilla)
                 self.Ubicaciones[numCasilla] = [x*self.WCasillas, y*self.HCasillas, 
                                                 (x+1)*self.WCasillas, (y+1)*self.HCasillas]
 
@@ -81,7 +83,7 @@ class Laberinto_Img():
         cv2.destroyAllWindows()
 
     def Comenzar(self):
-        f = plt.figure()
+        #f = plt.figure()
         while(True):
             _,frame = self.camara.read()
             frame = frame[self.N1[1]:self.N2[1], self.N1[0]:self.N2[0]]
@@ -94,8 +96,32 @@ class Laberinto_Img():
                 cv2.destroyWindow('Capturando Laberinto...')
                 break
 
+    def CrearImagen(self, y, x, frame, CO, CS):
+        x = abs(int(x))
+        y = abs(int(y))
+        Ima = np.zeros((y,300,3), np.uint8)
+        hcat = cv2.hconcat((frame, Ima))
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        hcat = cv2.hconcat((frame, Ima))
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        US = self.Ubicaciones[str(CS)]
+        Dx = (US[2] + US[0])/2 
+        Dy = (US[3] + US[1])/2
+        d = np.sqrt((self.cx - Dx )**2 + (self.cy - Dy)**2)
+        textos = ["Centroide  X:{}  Y:{}".format(int(self.cx), int(self.cy)),
+                "Casilla Actual: {}  Casilla Siguiente: {}".format(CO,CS),
+                "Direccion de Movimiento: {}".format(self.Movimiento),
+                "Distancias: " ,
+                "   Arriba: {}     Abajo: {}".format(self.Dists[1], self.Dists[3]),
+                "   Derecha: {}     Izquierda: {}".format(self.Dists[2],self.Dists[0]),
+                "Distancia Casilla: {}".format(round(d,1))]
+                # self.Dists = [ Izquierda , Arriba , Derecha, Abajo ]
+        for i, texto in enumerate(textos):
+            cv2.putText(hcat, texto, (x + 5, 20*(i+1)+10) , font ,0.4, (255,255,255))
+        return hcat
+
     def VideoLaberinto(self, CasOrig, CasSig):
-        f = plt.figure()
+        #f = plt.figure()
         while(True):
             _,frame = self.camara.read()
             frame = frame[self.N1[1]:self.N2[1], self.N1[0]:self.N2[0]]
@@ -103,12 +129,16 @@ class Laberinto_Img():
             for Esp in self.EspaciosNegros:
                 frame = cv2.rectangle(frame,(self.Ubicaciones[str(Esp)][0],self.Ubicaciones[str(Esp)][1]), 
                         (self.Ubicaciones[str(Esp)][2],self.Ubicaciones[str(Esp)][3]), (0,0,0),-1)
-            cv2.imshow('Capturando Laberinto...',frame)
-            img, r = self.BuscarRobot(frameOrig)
+            img, r = self.BuscarRobot(frameOrig)                            
+            R = self.AccionRobot(frameOrig, CasOrig, CasSig)
+            self.CalcularMov(CasOrig, CasSig)
+            frameM = self.CrearImagen(self.N1[1]-self.N2[1], self.N1[0]-self.N2[0], frame.copy(),
+                                        CasOrig, CasSig)
+            cv2.imshow('Capturando Laberinto...',frameM)
             if cv2.waitKey(1) and not r:
                 continue
-            if cv2.waitKey(1) and self.AccionRobot(frameOrig, CasOrig, CasSig):
-                cv2.destroyAllWindows()
+            if cv2.waitKey(1) and R:
+                #cv2.destroyAllWindows()
                 break
             else:
                 self.ControlRobot(CasOrig, CasSig)
@@ -133,47 +163,38 @@ class Laberinto_Img():
         momentos = cv2.moments(mayor_contorno)
         cx = float(momentos['m10']/momentos['m00'])
         cy = float(momentos['m01']/momentos['m00'])
-        # if abs(cx-self.cx)<=100 and abs(cy-self.cy)<=100:
-        #     print("Sin Ubicacion, distanciado")
-        #     return False
+        # if abs(cx-self.cx)<=
         self.cx = round(cx,2)
         self.cy = round(cy,2)
         return label_im2, True
-        # cv2.imshow("Labeled", im8.astype(np.uint8))
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
 
     def AccionRobot(self, frameOrig, CasOrig, CasSig):
-        print("Centroide x: {}   Centroide y: {}".format(self.cx,self.cy))
+        #print("Centroide x: {}   Centroide y: {}".format(self.cx,self.cy))
         UO = self.Ubicaciones[str(CasOrig)]
         US = self.Ubicaciones[str(CasSig)]
         self.Dists = [round(self.cx - UO[0]), round(self.cy - UO[1]), 
                       round(UO[2] - self.cx), round(UO[3] - self.cy)]
-        # DI = self.cy - UO[1]
-        # DA = self.cy - UO[1]
-        # DB = UO[3] - self.cy
-        # DD = UO[2] - self.cx
-        # print("Distancia Izquierda: {}".format(DI))
-        # print("Distancia Arriba: {}".format(DA))
-        # print("Distancia Abajo: {}".format(DB))
-        # print("Distancia Derecha: {}".format(DD))
+        # self.Dists = [ Izquierda , Arriba , Abajo, Derecha ]
         if UO[2]>self.cx>UO[0] and UO[3]>self.cy>UO[1]:
-            print("En Casilla Actual")
+            #print("En Casilla Actual")
             return False
-        elif US[2]>self.cx>US[0] and US[3]>self.cy>US[1]:
-            print("En Casilla siguiente")
-            self.EnviarDatosRobot(None,None)
-            time.sleep(2)
+        elif 10+(US[2]+ US[0])/2 >self.cx> -10+(US[2]+ US[0])/2 \
+                and 10+(US[3]+US[1])/2>self.cy>-10+(US[3]+US[1])/2:
+            #print("En Casilla siguiente")
+            #self.EnviarDatosRobot(None,None)
+            #time.sleep(2)
             return True
         else:
             return False
+
+    def CalcularMov(self, CasOrig, CasSig):
+        self.Movimiento = self.__GetDireccion(CasOrig, CasSig) 
+        # print(self.Movimiento)
+        # print(self.Dists)
     
     def ControlRobot(self, CasOrig, CasSig):
-        Movimiento = self.__GetDireccion(CasOrig, CasSig)
-        print(Movimiento)
-        print(self.Dists)
-        Velocidades = self.Velocidades(Movimiento)
-        self.EnviarDatosRobot(Movimiento, Velocidades)
+        Velocidades = self.Velocidades(self.Movimiento)
+        #self.EnviarDatosRobot(Movimiento, Velocidades)
 
     def Velocidades(self, Movimiento):
         if Movimiento == "Arriba":
@@ -208,7 +229,7 @@ class Laberinto_Img():
         self.HCasillas = round(self.sizeLab[0]/self.NCasillasY)
         for y in range(self.NCasillasY):
             for x in range(self.NCasillasX):
-                numCasilla = (x+1) + ((y)*(self.NCasillasY))
+                numCasilla = (x+1) + ((y)*(self.NCasillasX))
                 if numCasilla == CasOrig:
                     CorOrg = [x,y]
                 if numCasilla == CasSig:
@@ -259,6 +280,7 @@ class Laberinto_Img():
     # Lab.CapturarLaberinto()
     # Lab.MostrarLaberinto()
     # Lab.RecortarLaberinto()
+    # ImgLab.Comenzar()
 #     CasSig = 8 
 #     CasOrig = 15
 #     EN = [6,9,10,11,13,16,18,22,23,25,26,27,32,37,38,39,41,42]
