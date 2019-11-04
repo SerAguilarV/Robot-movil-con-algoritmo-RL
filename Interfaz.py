@@ -1,11 +1,14 @@
 import tkinter as tk 
 from PIL import Image, ImageTk
-import LaberintoPredeterminado
+from CrearLaberinto import CrearLaberinto
 
 Laberinto = None
 RL = None
 Eps = None
 EspaciosNegros = []
+Tamaño = []
+Inicio = None
+Final = None
 
 class WindowMain():
     def __init__(self):
@@ -18,8 +21,9 @@ class WindowMain():
         titulo = tk.Label(self.root , text = "Trabajo Terminal 2\nRobot Movil con Q-Learning ", font = ("Helvética", "24", "bold")  ).pack(side = tk.TOP)
         frame = tk.Frame(self.root)
         frame.pack()
-        Boton_1 = tk.Button(frame, text="Crear\nLaberinto", font=("Helvética", "16") , width = 15)
-        Boton_1.pack(side = tk.LEFT, padx = 20, pady =20)
+        Boton_1 = tk.Button(frame, text="Crear\nLaberinto", font=("Helvética", "16") , width = 15,
+                command = self.functionCrearLab)
+        Boton_1.pack(side = tk.LEFT, padx = 20, pady =20, )
         Boton_2 = tk.Button(frame, text="Laberinto\nPredeterminado", font=("Helvética", "16") , width = 15, 
                                 command = self.functionLabDefault)
         Boton_2.pack(side = tk.RIGHT, padx = 20, pady =20)
@@ -29,9 +33,23 @@ class WindowMain():
         self.root.destroy()
         W = WindowLabDefault()
     
-    def GetDatos(self):
+    def functionCrearLab(self):
+        self.root.destroy()
+        W = WindowCrearLab()
+
+    def GetDatosPred(self):
         global Laberinto, EspaciosNegros, RL, Eps
         return Laberinto, EspaciosNegros, RL, Eps
+    
+    def GetDatos(self):
+        global Laberinto, EspaciosNegros, RL, Eps, Tamaño, Inicio, Final
+        return Laberinto, EspaciosNegros, RL, Eps, Tamaño, Inicio, Final
+    
+    def KindLab(self):
+        global Laberinto
+        if Laberinto == "Creado":
+            return True
+        return False
         
 class WindowLabDefault():
     def __init__(self):
@@ -78,6 +96,7 @@ class WindowLabDefault():
 
 class WindowFeaturesLab():
     def __init__(self):
+        global Laberinto
         self.root = tk.Tk() 
         self.root.geometry("500x350")
         self.root.title("UPIITA")
@@ -85,6 +104,8 @@ class WindowFeaturesLab():
         #RL2.set(0)
         frame2 = tk.Frame(self.root, height=20)
         frame2.pack()
+        if not Laberinto:
+            Laberinto = "Creado"
         titulo = tk.Label(self.root , text = "Caracteristicas para\nLaberinto {} ".format(Laberinto), font = ("Helvética", "14", "bold")  ).pack(side = tk.TOP, pady =5)
         frame = tk.Frame(self.root) 
         frame.pack()
@@ -96,13 +117,14 @@ class WindowFeaturesLab():
         frame3 = tk.Frame(self.root, height=20)
         frame3.pack()
         labelframe_widget = tk.LabelFrame(frame3, text="Algoritmo de Reinforcement Learning")
-        radiobutton_widget1 = tk.Radiobutton(labelframe_widget, text="Q - Learning 1", variable=RL2, value=1)
+        radiobutton_widget1 = tk.Radiobutton(labelframe_widget, text="Q - Learning", variable=RL2, value=1)
         radiobutton_widget2 = tk.Radiobutton(labelframe_widget, text="SARSA", variable=RL2, value=2)
         radiobutton_widget3 = tk.Radiobutton(labelframe_widget, text="Backward Q - Learning", variable=RL2, value=3)
         labelframe_widget.pack(padx=20, pady=20)
         radiobutton_widget1.pack(side = tk.LEFT, padx=10)
         radiobutton_widget2.pack(side = tk.LEFT, padx=10)
         radiobutton_widget3.pack(side = tk.LEFT, padx=10)
+        radiobutton_widget3.select()
 
         frame5 = tk.Frame(self.root)
         frame5.pack()
@@ -122,11 +144,52 @@ class WindowFeaturesLab():
             EspaciosNegros = []
         self.root.destroy()
 
-# if __name__ is "__main__":
-#     W = WindowMain()
-#     L, EN, R, E  = W.GetDatos()
-#     print("Laberinto: {}".format(L))
-#     print("Espcios en Negro: {}".format(EN))
-#     print("RL: {}".format(R))
-#     print("Episodios: {}".format(E))
-    #LaberintoPredeterminado.Iniciar(RL, Corr, Eps, Laberinto)
+class WindowCrearLab():
+    def __init__(self):
+        self.root = tk.Tk() 
+        self.root.geometry("500x300")
+        self.root.title("Crear Laberinto")
+        frame2 = tk.Frame(self.root, height=20)
+        frame2.pack()
+
+        titulo = tk.Label(self.root , text = "Tamaño de Laberinto", font = ("Helvética", "14", "bold")  ).pack(side = tk.TOP, pady =5)
+        frame3 = tk.Frame(self.root) 
+        frame3.pack(pady =5)
+        
+        scale_widget = tk.Scale(frame3, from_=3, to=10,orient=tk.HORIZONTAL, width=15, length =200 , 
+                        label = "Altura de Laberinto", font = ("Helvética", "10"))
+        scale_widget.set(5)
+        scale_widget.pack(side = tk.TOP, pady = 10)
+
+        scale_widget2 = tk.Scale(frame3, from_=3, to=10,orient=tk.HORIZONTAL, width=15, length =200 ,
+                        label = "Ancho de Laberinto" , font = ("Helvética", "10") )
+        scale_widget2.set(5)
+        scale_widget2.pack(side = tk.TOP, pady =10)
+
+        frame5 = tk.Frame(self.root)
+        frame5.pack(pady = 20)
+        boton1 = tk.Button(frame5, text = "Continuar", command = lambda : self.__ContinueProgram(
+                                                            scale_widget.get(), scale_widget2.get()))
+        boton1.pack(side = tk.TOP)
+
+        self.root.mainloop() 
+        
+    def __ContinueProgram(self,v1,v2):
+        global EspaciosNegros, Tamaño, Inicio, Final
+        print("Altura de Laberinto: {}".format(v1))
+        print("Ancho de Laberinto: {}".format(v2))
+        Tamaño = [v1,v2]
+        self.root.destroy()
+        L = CrearLaberinto()
+        EspaciosNegros, Inicio, Final = L.create_Labyrinth(size = {'heigth':v1, 'width':v2})
+        WFL = WindowFeaturesLab()
+
+
+if __name__ is "__main__":
+    W = WindowCrearLab()
+    # W = WindowMain()
+    # L, EN, R, E  = W.GetDatos()
+    # print("Laberinto: {}".format(L))
+    # print("Espacios en Negro: {}".format(EN))
+    # print("RL: {}".format(R))
+    # print("Episodios: {}".format(E))

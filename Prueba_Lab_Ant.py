@@ -8,7 +8,7 @@ from Laberinto_Img import Laberinto_Img
 
 ImgLab = None
 
-def main(NumeroEpisodios, Laberinto, RL, ImgLab):
+def main(NumeroEpisodios, Laberinto, RL, ImgLab, Tamaño = None, EdoObj = None, EdoInicial = None ):
     frames=1
     alpha=0.9
     gamma=0.95
@@ -29,7 +29,6 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab):
         lab_q=lab_q_1
         EstadoObjetivo = 31
         Q=np.zeros([len(reco),4])
-        #Q = -np.random.random([len(reco),4])/100
         EstadosIniciales=[1,1,1]
         Ima_Laberinto = 'laberinto1.png'
 
@@ -37,7 +36,6 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab):
         reco=reco2
         lab_q=lab_q_2
         EstadoObjetivo = 34
-        #Q = np.random.random([len(reco),4])/100
         Q=np.zeros([len(reco),4])
         EstadosIniciales=[1,1,1]
         Ima_Laberinto = 'laberinto2.png'
@@ -52,7 +50,12 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab):
 
     else:
         print("Laberinto Predeterminado")
-        sys.exit()
+        CrearLabQ
+        CrearReco
+        EstadoObjetivo
+        Q = np.zeros([len(Tamaño[0]*Tamaño[1]),4])
+        EstadosIniciales = []
+        Ima_Laberinto = "laberinto.png"
 
     Pasos = 0
     contadorPasos= np.zeros([NumeroEpisodios])
@@ -78,6 +81,7 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab):
     pygame.display.update()
     clock = pygame.time.Clock()
     
+    Comenzar()
     
     while True:
 #===========================================================================================================
@@ -362,9 +366,11 @@ def Ploter_Grafica(GRAF,li,ls,R,L):
 
 def MoverRobot(EdoAnt, EdoSig, ImgLab, Laberinto):
     L = np.array(Laberinto)[1:-1,1:-1]
-    EN = [6,9,10,11,13,16,18,22,23,25,26,27,32,37,38,39,41,42]
     EdoAntN, EdoSigN = Reubicar(EdoAnt, EdoSig, L)
-    ImgLab.VideoLaberinto(EN, EdoAntN, EdoSigN)
+    ImgLab.VideoLaberinto(EdoAntN, EdoSigN)
+
+def Comenzar():
+    ImgLab.Comenzar()
 
 def Reubicar(EdoAnt, EdoSig, Laberinto):
     flag = False
@@ -387,9 +393,9 @@ def Reubicar(EdoAnt, EdoSig, Laberinto):
     EdoSigN = (x+1) + ((y)*(7))
     return EdoAntN, EdoSigN
 
-def Iniciar(NumeroEpisodios, Laberinto, RL):
+def Iniciar(NumeroEpisodios, Laberinto, RL, EspaciosNegro):
     global ImgLab
-    ImgLab = Laberinto_Img()
+    ImgLab = Laberinto_Img(EspaciosNegro)
     ImgLab.CapturarLaberinto()
     ImgLab.MostrarLaberinto()
     ImgLab.RecortarLaberinto()

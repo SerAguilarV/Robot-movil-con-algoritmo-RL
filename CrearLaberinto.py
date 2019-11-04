@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as pt
 
-class Labyrinth:
+class CrearLaberinto:
     def __init__(self):
         self.heigth = 10
         self.width = 10
@@ -10,7 +10,7 @@ class Labyrinth:
     def ask_size(self):
         h = 0
         texto = 'Introduce cuantas casillas verticales tendra el laberinto: '
-        while h<6 or h>10:
+        while h<5 or h>10:
             try:
                 h=int(input(texto))
             except:
@@ -19,7 +19,7 @@ class Labyrinth:
                 texto = '\nEl numero elige un numero entre el 4 y 10.\nIntroduce cuantas casillas verticales tendra el laberinto: '
         w = 0        
         texto = 'Introduce cuantas casillas horizontales tendra el laberinto: '
-        while w<6 or w>10:
+        while w<5 or w>10:
             try:
                 w=int(input(texto))
             except:
@@ -64,9 +64,9 @@ class Labyrinth:
     def path_Labyrinth(self,h,w, size_fig):
         path = []
         goal = False
-        goal_position = None
+        startPosition = None
         start = False
-        start_position = None
+        goalPosition = None
         while True:
             fig = plt.figure(figsize=size_fig)
             ax = fig.add_axes([0,0,1,1])
@@ -88,7 +88,7 @@ class Labyrinth:
                 patches_path = self.get_paths(path)
                 for pat in patches_path:
                     ax.add_patch(pat)
-            if not goal and not goal_position:
+            if not goal and not startPosition:
                 x = plt.ginput(n=-1, show_clicks = True)
                 if not x:
                     goal = True
@@ -99,36 +99,63 @@ class Labyrinth:
                     path.append([int(x1[0]),int(x1[1])])
                 plt.close()
                 print("Ruta:\n", path)
-            elif goal and not goal_position and not start:
+            elif goal and not startPosition and not start:
                 x = plt.ginput(n=1, show_clicks = True)
                 x = x[0]
-                goal_position = [int(x[0]),int(x[1])]
+                startPosition = [int(x[0]),int(x[1])]
                 plt.close()
                 continue
-            elif goal_position and not start:
-                p = pt.Rectangle((goal_position[0],goal_position[1]), 1,1, fill = True, color='green')
+            elif startPosition and not start:
+                p = pt.Rectangle((startPosition[0],startPosition[1]), 1,1, fill = True, color='green')
                 ax.add_patch(p)
                 plt.close()
                 goal = False
                 start = True
-            elif start and not start_position:
-                p = pt.Rectangle((goal_position[0],goal_position[1]), 1,1, fill = True, color='green')
+            elif start and not goalPosition:
+                p = pt.Rectangle((startPosition[0],startPosition[1]), 1,1, fill = True, color='green')
                 ax.add_patch(p)
                 x = plt.ginput(n=1, show_clicks = True)
                 x = x[0]
-                start_position = [int(x[0]),int(x[1])]
+                goalPosition = [int(x[0]),int(x[1])]
                 plt.close()
                 continue
             else:
-                p = pt.Rectangle((goal_position[0],goal_position[1]), 1,1, fill = True, color='green')
+                p = pt.Rectangle((startPosition[0],startPosition[1]), 1,1, fill = True, color='green')
                 ax.add_patch(p)
-                p = pt.Rectangle((start_position[0],start_position[1]), 1,1, fill = True, color='blue')
+                p = pt.Rectangle((goalPosition[0],goalPosition[1]), 1,1, fill = True, color='yellow')
                 ax.add_patch(p)
                 break
+        print(path)
+        BlackSpaces = self.getBlackSpaces(path, h, w)
+        Inicio = self.LookFor(startPosition, h, w)
+        Final = self.LookFor(goalPosition, h, w)
         plt.savefig('laberinto.png')
         plt.close()
+        return BlackSpaces, Inicio, Final
 
-    
+    def LookFor(self, path, filas, columnas):
+        conty = -1
+        for y in range(filas,0,-1):
+            conty+=1
+            for x in range(1,columnas+1,1):
+                if [x,y] == path:
+                    numCasilla = (x) + ((conty)*(columnas))
+                    print("Casilla Encontrada: " + str(numCasilla))
+                    return numCasilla
+
+    def getBlackSpaces(self, path, filas, columnas):
+        BlackSpaces = []
+        conty = -1
+        for y in range(filas,0,-1):
+            conty+=1
+            for x in range(1,columnas+1,1):
+                if [x,y] in path:
+                    numCasilla = (x) + ((conty)*(columnas))
+                    #print("Casilla Negra {}: {} , {}".format(numCasilla, x, conty))
+                    BlackSpaces.append(numCasilla)
+        print(BlackSpaces)
+        return BlackSpaces
+
     def create_Labyrinth(self, size = None ):
         if size:
             self.heigth = size['heigth']
@@ -136,11 +163,16 @@ class Labyrinth:
         h = self.heigth
         w = self.width
         size_fig = self.sizeFig()
-        self.path_Labyrinth(h,w, size_fig)
+        BlackSpaces, Inicio, Final = self.path_Labyrinth(h,w, size_fig)
         print('Se termino, el laberinto es el siguiente')
         self.show_Labyrinth()
+        return BlackSpaces, Inicio, Final
         
-if __name__ == '__main__':
-    L = Labyrinth()
-    h,w = L.ask_size()
-    L.create_Labyrinth(size = {'heigth':h, 'width':w})
+# if __name__ == '__main__':
+# def Main(h, w):
+#     L = Labyrinth()
+#     # h,w = L.ask_size()
+#     L.create_Labyrinth(size = {'heigth':h, 'width':w})
+#     return h,w
+
+#Main()
