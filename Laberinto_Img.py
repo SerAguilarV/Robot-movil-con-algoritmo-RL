@@ -33,6 +33,7 @@ class Laberinto_Img():
         self.cont = 0
         self.EspaciosNegros = EspaciosNegros
         self.Movimiento = ""
+        self.DataEnvi = {}
     
     def ClicksFunction(self, event,x,y,flags,param):
         if event == cv2.EVENT_LBUTTONDBLCLK:
@@ -105,17 +106,28 @@ class Laberinto_Img():
         hcat = cv2.hconcat((frame, Ima))
         font = cv2.FONT_HERSHEY_SIMPLEX
         US = self.Ubicaciones[str(CS)]
-        Dx = (US[2] + US[0])/2 
+        Dx = (US[2] + US[0])/2  
         Dy = (US[3] + US[1])/2
         d = np.sqrt((self.cx - Dx )**2 + (self.cy - Dy)**2)
+        Dsx = round(Dx-self.cx,1)
+        Dsy = round(Dy-self.cy,1)
+        Post = self.Velocidades(self.Movimiento, [Dsx,Dsy])
+        Iz =  Post["2"]["Vel"]
+        De =  Post["3"]["Vel"]
+        Arr =  Post["0"]["Vel"]
+        Aba =  Post["1"]["Vel"]
         textos = ["Centroide  X:{}  Y:{}".format(int(self.cx), int(self.cy)),
                 "Casilla Actual: {}  Casilla Siguiente: {}".format(CO,CS),
                 "Direccion de Movimiento: {}".format(self.Movimiento),
-                "Distancias: " ,
-                "   Arriba: {}     Abajo: {}".format(self.Dists[1], self.Dists[3]),
-                "   Derecha: {}     Izquierda: {}".format(self.Dists[2],self.Dists[0]),
-                "Distancia Casilla: {}".format(round(d,1))]
+                #"Distancias: " ,
+                #"   Arriba: {}     Abajo: {}".format(self.Dists[1], self.Dists[3]),
+                #"   Derecha: {}     Izquierda: {}".format(self.Dists[2],self.Dists[0]),
+                "Movimiento de Llantas",
+                "Iz:{} De:{} Arr:{} Aba:{}".format(Iz, De, Arr, Aba),
+                "Distancia Eje X: {}".format(Dsx),
+                "Distancia Eje Y: {}".format(Dsy)]
                 # self.Dists = [ Izquierda , Arriba , Derecha, Abajo ]
+        self.DataEnvi = {"Mov": self.Movimiento, "Dx": Dsx, "Dy" : Dsy}
         for i, texto in enumerate(textos):
             cv2.putText(hcat, texto, (x + 5, 20*(i+1)+10) , font ,0.4, (255,255,255))
         return hcat
@@ -136,6 +148,7 @@ class Laberinto_Img():
                                         CasOrig, CasSig)
             cv2.imshow('Capturando Laberinto...',frameM)
             if cv2.waitKey(1) and not r:
+                #self.EnviarDatosRobot("0", "0")
                 continue
             if cv2.waitKey(1) and R:
                 #cv2.destroyAllWindows()
@@ -194,31 +207,57 @@ class Laberinto_Img():
     
     def ControlRobot(self, CasOrig, CasSig):
         Velocidades = self.Velocidades(self.Movimiento)
+        print(Velocidades)
         #self.EnviarDatosRobot(Movimiento, Velocidades)
 
-    def Velocidades(self, Movimiento):
-        if Movimiento == "Arriba":
-            post = {"0" : {"Sentido" : True, "Vel" : 0},
-                "1" : {"Sentido" : True, "Vel" : 0},
-                "2" : {"Sentido" : False, "Vel" : 0.5},
-                "3" : {"Sentido" : True, "Vel" : 0.5}}
-        elif Movimiento == "Abajo":
-            post = {"0" : {"Sentido" : True, "Vel" : 0},
-                "1" : {"Sentido" : True, "Vel" : 0},
-                "2" : {"Sentido" : True, "Vel" : 0.5},
-                "3" : {"Sentido" : False, "Vel" : 0.5}}
-        elif Movimiento == "Derecha":
-            post = {"0" : {"Sentido" : False, "Vel" : 0.5},
-                "1" : {"Sentido" : True, "Vel" : 0.5},
-                "2" : {"Sentido" : True, "Vel" : 0},
-                "3" : {"Sentido" : True, "Vel" : 0}}
-        elif Movimiento == "Izquierda":
-            post = {"0" : {"Sentido" : True, "Vel" : 0.5},
-                "1" : {"Sentido" : False, "Vel" : 0.5},
-                "2" : {"Sentido" : True, "Vel" : 0},
-                "3" : {"Sentido" : True, "Vel" : 0}}
+    def Velocidades(self, Movimiento, data = False):
+        if not data:
+            Dx = self.DataEnvi["Dx"]
+            Dy = self.DataEnvi["Dy"]
         else:
-            pass
+            Dx = data[0] 
+            Dy = data[1]
+        if Movimiento == "Arriba":
+            S = [True, True, False, True]
+            if Dx>1:
+                V = [0,0,0.5,0.3]
+            elif Dx<-1:
+                V = [0,0,0.3,0.5]
+            else:
+                V = [0,0,0.5,0.5]
+        elif Movimiento == "Abajo":
+            S = [True, True, True, False]
+            if Dx>1:
+                V = [0,0,0.5,0.3]
+            elif Dx<-1:
+                V = [0,0,0.3,0.5]
+            else:
+                V = [0,0,0.5,0.5]
+        elif Movimiento == "Derecha":
+            S = [False, True, True, True]
+            if Dy > 1:
+                V = [0.5, 0.3, 0, 0]
+            elif Dy < -1:
+                V = [0.3, 0.5, 0, 0]
+            else:
+                V = [0.5, 0.5, 0, 0]
+        elif Movimiento == "Izquierda":
+            S = [True, False, True, True]
+            if Dy > 1:
+                V = [0.5, 0.3, 0, 0]
+            elif Dy < -1:
+                V = [0.3, 0.5, 0, 0]
+            else:
+                V = [0.5, 0.5, 0, 0]
+        else:
+            S = [True, True, True, True]
+            V = [0, 0, 0, 0]
+
+        post = {"0" : {"Sentido" : S[0], "Vel" : V[0]},
+                "1" : {"Sentido" : S[1], "Vel" : V[1]},
+                "2" : {"Sentido" : S[2], "Vel" : V[2]},
+                "3" : {"Sentido" : S[3], "Vel" : V[3]}}
+        
         return post
 
     def __GetDireccion(self, CasOrig, CasSig):
@@ -257,7 +296,9 @@ class Laberinto_Img():
     def EnviarDatosRobot(self, Movimiento, Velocidades):
         if not self.SocketObj:
             self.CrearSocket()
-        if Velocidades:
+        if Velocidades == "0":
+            post = {'Mensaje' : "Robot detenido, mejorando imagen" } 
+        elif Velocidades:
             post = {'Mensaje' : Movimiento ,"Llantas":Velocidades, "Distancias":self.Dists} 
         else:
             post = {"Mensaje" : "Siguiente Casilla"}

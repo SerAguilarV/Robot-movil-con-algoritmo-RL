@@ -116,13 +116,15 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, EspaciosNegros, SizeL = [7,7], 
     pygame.display.update()
     clock = pygame.time.Clock()
     
+    
+
     while True:
 #===========================================================================================================
         if RL == 1:
             clock.tick(frames)
-            if RobotEnable:
-                Comenzar()
             if Inicio_Episodio==True:
+                if RobotEnable:
+                    Comenzar()
                 Recompensa=0
                 Pasos=0
                 Dir=np.random.randint(0, len(EstadosIniciales))
@@ -146,9 +148,9 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, EspaciosNegros, SizeL = [7,7], 
 #=====================================================================================================================
         elif RL == 2 or RL==3:
             clock.tick(frames)
-            if RobotEnable:
-                Comenzar()
             if Inicio_Episodio==True:
+                if RobotEnable:
+                    Comenzar()
                 if RL==3:
                     S=[]
                     A=[]
