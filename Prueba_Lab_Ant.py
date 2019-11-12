@@ -373,9 +373,7 @@ def Selec_Estado(AccionPosible,y,x, lab_q):
         y-=1
     else:
         y+=1
-
     Estado=lab_q[y][x]
-
     return(Estado,x,y)
         
 def Posicion_Estado(lab_q,EstadoActual):
@@ -450,10 +448,20 @@ def Iniciar(NumeroEpisodios, Laberinto, RL, EspaciosNegros, sizeLab = None, Inic
         ImgLab.MostrarLaberinto()
         ImgLab.RecortarLaberinto()
     if not Inicio:
-        main(NumeroEpisodios, Laberinto, RL, ImgLab, EspaciosNegros, RobotEnable=RobotEnable)
+        R = main(NumeroEpisodios, Laberinto, RL, ImgLab, EspaciosNegros, RobotEnable=RobotEnable)
     else:
-        main(NumeroEpisodios, Laberinto, RL, ImgLab, 
+        R = main(NumeroEpisodios, Laberinto, RL, ImgLab, 
             SizeL=sizeLab, EdoInicial = Inicio, EdoObj = Fin, EspaciosNegros = EspaciosNegros, RobotEnable=RobotEnable)
+    
+    y = np.linspace(1,len(R),len(R))
+    ALG = ("Q-Learning","SARSA","Backward Q-Learning")
+    plt.bar(R,y)
+    plt.title("Numero de Pasos con Politica Boltzmann\ncon Laberinto " + str(Laberinto))
+    plt.grid(True)
+    plt.ylim(li,ls)
+    plt.tight_layout()
+    plt.show()
 
 # if __name__ is "__main__":
+#     Iniciar(25, "Creado", 3, [4,5], [3,3], 1, 7, True)
 #     Iniciar(25, 'Creado', 1, [1, 8, 15], [3, 5], 11, 5)
