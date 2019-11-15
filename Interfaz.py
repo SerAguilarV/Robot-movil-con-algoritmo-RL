@@ -116,8 +116,8 @@ class WindowFeaturesLab():
         frame = tk.Frame(self.root) 
         frame.pack()
         LabelEpisodios = tk.Label(frame , text = "Número de Episodios ".format(Laberinto), font = ("Helvética", "11")  ).pack(side = tk.LEFT)
-        scale_widget = tk.Scale(frame, from_=0, to=100,orient=tk.HORIZONTAL, width=20, length =200 ,)
-        scale_widget.set(25)
+        scale_widget = tk.Scale(frame, from_=0, to=50,orient=tk.HORIZONTAL, width=20, length =200 ,)
+        scale_widget.set(15)
         scale_widget.pack(side = tk.RIGHT)
 
         frame3 = tk.Frame(self.root, height=20)

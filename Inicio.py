@@ -8,6 +8,6 @@ if __name__ == "__main__":
         Iniciar(Eps, Laberinto, RL, EspaciosNegros, RobotEnable=EnableRobot )
     else:
         Laberinto, EspaciosNegros, RL, Eps, Tamaño, Inicio, Final, EnableRobot = WinMain.GetDatos()
-        print("{}, {}, {}, {}, {}, {}, {}".format(Laberinto, EspaciosNegros, RL, Eps, Tamaño, Inicio, Final))
+        # print("{}, {}, {}, {}, {}, {}, {}".format(Laberinto, EspaciosNegros, RL, Eps, Tamaño, Inicio, Final))
         Iniciar(NumeroEpisodios = Eps, Laberinto = Laberinto, RL = RL, EspaciosNegros = EspaciosNegros, 
                                 sizeLab = Tamaño, Inicio = Inicio, Fin  = Final, RobotEnable=EnableRobot)

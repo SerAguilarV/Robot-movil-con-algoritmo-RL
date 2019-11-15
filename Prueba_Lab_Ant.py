@@ -195,12 +195,18 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, EspaciosNegros, SizeL = [7,7], 
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == K_ESCAPE:
+                    print("*"*30)
+                    print("---Matriz Q---")
                     print(Q)
+                    print("*"*30)
                     pygame.display.quit()
                     sys.exit()
                 elif event.key == K_DOWN:
                     frames=1
+                    print("*"*30)
+                    print("---Matriz Q---")
                     print(Q)
+                    print("*"*30)
                 elif event.key == K_UP:
                     frames=60
                 elif event.key == K_RIGHT:
@@ -222,7 +228,7 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, EspaciosNegros, SizeL = [7,7], 
             m=-10    
         if Recompensa==m:
             Inicio_Episodio=True
-            print(episodios)
+            print("Termina episodio {} por muerte del robot ".format(episodios))
             contadorPasos[episodios]=Pasos
             episodios=episodios+1
             if RL==3:
@@ -246,8 +252,7 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, EspaciosNegros, SizeL = [7,7], 
         
         if EstadoActual==EstadoObjetivo:
             Inicio_Episodio=True
-            print(episodios)
-            print(NumeroEpisodios)
+            print("Termina el episodio {} de {}".format(episodios,NumeroEpisodios))
             contadorPasos[episodios]=Pasos
             episodios=episodios+1
             if RL==3:
@@ -263,6 +268,9 @@ def main(NumeroEpisodios, Laberinto, RL, ImgLab, EspaciosNegros, SizeL = [7,7], 
                     Q[Edo][AccionPosible] = Q[Edo][AccionPosible]+0.5*(Recompensa+0.95*MaximoEdoSig-Q[Edo][AccionPosible])
                                           
             if episodios==NumeroEpisodios:
+                print("*"*30)
+                print("Laberinto Resuelto, graficando resultados ... ")
+                print("*"*30)
                 pygame.display.quit()
                 B=np.ones(len(contadorPasos))
                 B=B*contadorPasos
@@ -455,12 +463,14 @@ def Iniciar(NumeroEpisodios, Laberinto, RL, EspaciosNegros, sizeLab = None, Inic
     
     y = np.linspace(1,len(R),len(R))
     ALG = ("Q-Learning","SARSA","Backward Q-Learning")
-    plt.bar(R,y)
+    plt.bar(y,R)
     plt.title("Numero de Pasos con Politica Boltzmann\ncon Laberinto " + str(Laberinto))
     plt.grid(True)
-    plt.ylim(li,ls)
+    # plt.ylim(li,ls)
     plt.tight_layout()
     plt.show()
+
+    print("Fin del programa ...")
 
 # if __name__ is "__main__":
 #     Iniciar(25, "Creado", 3, [4,5], [3,3], 1, 7, True)
