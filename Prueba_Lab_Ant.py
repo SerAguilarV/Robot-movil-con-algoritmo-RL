@@ -468,6 +468,8 @@ def Iniciar(NumeroEpisodios, Laberinto, RL, EspaciosNegros, sizeLab = None, Inic
     plt.grid(True)
     # plt.ylim(li,ls)
     plt.tight_layout()
+    for i in range(len(R)):
+        plt.text(x = y[i]-0.4 , y = R[i]+0.2, s = R[i] , size = 10)
     plt.show()
 
     print("Fin del programa ...")

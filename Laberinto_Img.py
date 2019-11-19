@@ -394,7 +394,7 @@ class Laberinto_Img():
             try:
                 post = {'Mensaje' : "Socket Conectado"}
                 self.SocketObj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.SocketObj.connect(('192.168.100.32', 10701))
+                self.SocketObj.connect(('192.168.43.31', 10701))
                 self.SocketObj.sendall(json.dumps(post, default=json_util.default).encode('utf-8'))
                 respuesta = json.loads(self.SocketObj.recv(8192).decode('utf-8'))
                 print(respuesta['Resp'])

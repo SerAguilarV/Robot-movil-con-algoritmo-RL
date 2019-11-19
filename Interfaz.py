@@ -126,10 +126,12 @@ class WindowFeaturesLab():
         radiobutton_widget1 = tk.Radiobutton(labelframe_widget, text="Q - Learning", variable=RL2, value=1)
         radiobutton_widget2 = tk.Radiobutton(labelframe_widget, text="SARSA", variable=RL2, value=2)
         radiobutton_widget3 = tk.Radiobutton(labelframe_widget, text="Backward Q - Learning", variable=RL2, value=3)
+        radiobutton_widget4 = tk.Radiobutton(labelframe_widget, text="Todos", variable=RL2, value=4)
         labelframe_widget.pack(padx=20, pady=20)
         radiobutton_widget1.pack(side = tk.LEFT, padx=10)
         radiobutton_widget2.pack(side = tk.LEFT, padx=10)
         radiobutton_widget3.pack(side = tk.LEFT, padx=10)
+        radiobutton_widget4.pack(side = tk.LEFT, padx=10)
         radiobutton_widget3.select()
 
         frame3 = tk.Frame(self.root, height=20)
